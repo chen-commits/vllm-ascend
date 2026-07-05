@@ -26,7 +26,7 @@ pytest和yaml-driven配置写在里面
 /nightly-pr xxx和nightly-test label的逻辑被删掉了，等重构
 或者参考：https://github.com/vllm-project/vllm-ascend/pull/10919
 
-/nightly xxx触发已经存在的用例
+/nightly xxx触发已经存在的用例：pr_nightly_command.yml -> schedule_nightly_test_a3.yaml
 
 TODO：下载日志
 summary里贴一张截图
