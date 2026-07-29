@@ -1,5 +1,5 @@
 test_name: "DeepSeek-V4-Pro-w4a8-prefix-cache-PD"
-model: "/mnt/weight/DeepSeek-V4-Pro-w4a8-0505"
+model: "/mnt/share/weight/DeepSeek-V4-Pro-w4a8-0505"
 num_nodes: 4
 npu_per_node: 16
 
