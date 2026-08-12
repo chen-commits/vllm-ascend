@@ -57,7 +57,8 @@ benchmarks:
 Generated files are cached under `/tmp/vllm_ascend_datasets` by default. Set
 `VLLM_ASCEND_DATASET_CACHE` to use another cache directory. Each cache
 directory name contains the dataset shape, model basename, and a configuration
-hash, for example `GSM8K-in3500-num2800-DeepSeek-V4-<hash>`.
+hash, for example
+`GSM8K-in3500-num2800-seed42-DeepSeek-V4-<hash>`.
 Each generated dataset directory contains `test.jsonl` and an empty
 `train.jsonl`, as required by the AISBench GSM8K dataset loader.
 

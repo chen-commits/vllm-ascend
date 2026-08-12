@@ -81,7 +81,7 @@ def test_generate_fixed_dataset(tmpdir) -> None:
     questions = _read_questions(dataset_dir)
     assert len(questions) == 5
     assert all(len(tokenizer.encode(question)) == 16 for question in questions)
-    assert Path(dataset_dir).name.startswith("GSM8K-in16-num5-test-model-")
+    assert Path(dataset_dir).name.startswith("GSM8K-in16-num5-seed7-test-model-")
     assert (Path(dataset_dir) / "train.jsonl").read_text(encoding="utf-8") == ""
     assert (Path(dataset_dir) / "metadata.json").is_file()
 
@@ -106,7 +106,7 @@ def test_generate_prefix_dataset(tmpdir) -> None:
     )
 
     tokenized = [tokenizer.encode(question) for question in _read_questions(dataset_dir)]
-    assert Path(dataset_dir).name.startswith("prefix50-in20-num6-test-model-")
+    assert Path(dataset_dir).name.startswith("prefix50-in20-num6-seed11-test-model-")
     assert (Path(dataset_dir) / "train.jsonl").read_text(encoding="utf-8") == ""
     assert all(len(token_ids) == 20 for token_ids in tokenized)
     assert tokenized[0][:10] == tokenized[2][:10] == tokenized[4][:10]

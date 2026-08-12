@@ -214,7 +214,7 @@ def _dataset_cache_dir(model_path: str, config: dict[str, Any], cache_root: str 
     else:
         prefix_percentage = f"{config['prefix_ratio'] * 100:g}"
         dataset_name = f"prefix{prefix_percentage}-in{config['input_len']}-num{config['num_samples']}"
-    return Path(cache_root) / f"{dataset_name}-{model_name}-{digest}"
+    return Path(cache_root) / f"{dataset_name}-seed{config['seed']}-{model_name}-{digest}"
 
 
 def _is_complete_dataset(dataset_file: Path, expected_rows: int) -> bool:
