@@ -42,7 +42,7 @@ test_cases:
     benchmarks:
       acc:
         case_type: accuracy
-        dataset_path: vllm-ascend/gsm8k-lite
+        dataset_path: /mnt/share/c00893695/dataset/gsm8k-lite
         request_conf: vllm_api_general_chat
         dataset_conf: gsm8k/gsm8k_gen_0_shot_cot_chat_prompt
         max_out_len: 9000
@@ -65,7 +65,11 @@ test_cases:
         threshold: 5
       perf:
         case_type: performance
-        dataset_path: vllm-ascend/GSM8K-in256-bs1-Minimax
+        dataset_generator:
+          type: fixed
+          input_len: 256
+          num_samples: 1
+          seed: 42
         request_conf: vllm_api_stream_chat
         dataset_conf: gsm8k/gsm8k_gen_0_shot_cot_str_perf
         num_prompts: 1

@@ -4,7 +4,7 @@
 
 test_cases:
   - name: "Qwen3.5-27B-w8a8"
-    model: "Eco-Tech/Qwen3.5-27B-w8a8-mtp"
+    model: "/mnt/share/weights/Qwen3.5-27B-w8a8-org"
     envs:
       VLLM_USE_MODELSCOPE: "true"
       PYTORCH_NPU_ALLOC_CONF: "expandable_segments:True"
@@ -45,7 +45,7 @@ test_cases:
     benchmarks:
       acc_aime2025:
         case_type: accuracy
-        dataset_path: vllm-ascend/aime2025
+        dataset_path_local: /mnt/share/c00893695/dataset/aime2025
         request_conf: vllm_api_general_chat
         dataset_conf: aime2025/aime2025_gen_0_shot_chat_prompt
         max_out_len: 65536
@@ -62,7 +62,11 @@ test_cases:
         repetition_penalty: 1.0
       perf:
         case_type: performance
-        dataset_path: vllm-ascend/GSM8K-in3500-bs8000-qwen3
+        dataset_generator:
+          type: fixed
+          input_len: 3500
+          num_samples: 8000
+          seed: 42
         request_conf: vllm_api_stream_chat
         dataset_conf: gsm8k/gsm8k_gen_0_shot_cot_str_perf
         num_prompts: 140

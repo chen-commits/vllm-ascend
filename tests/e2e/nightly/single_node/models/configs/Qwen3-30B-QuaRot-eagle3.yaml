@@ -29,7 +29,11 @@ test_cases:
     benchmarks:
       perf:
         case_type: performance
-        dataset_path: vllm-ascend/GSM8K-in3500-bs400
+        dataset_generator:
+          type: fixed
+          input_len: 3500
+          num_samples: 400
+          seed: 42
         request_conf: vllm_api_stream_chat
         dataset_conf: gsm8k/gsm8k_gen_0_shot_cot_str_perf
         num_prompts: 80
