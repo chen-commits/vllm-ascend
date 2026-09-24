@@ -50,7 +50,7 @@ flowchart TB
         direction LR
         N["nightly_config.yaml"]
         W["weekly_config.yaml"]
-        C["用例条目<br/>test / case_id / size<br/>dp_load_balancing / 硬件参数"]
+        C["用例条目<br/>name / tests / size<br/>dp_load_balancing / 硬件参数"]
         N --> C
         W --> C
     end
@@ -175,7 +175,7 @@ tests/e2e/
 | 调度和结果语义不同 | PR 关注合入门禁和快速反馈，periodic 关注基线、趋势、good table 和 bisect，结果命名空间不能混用 |
 | 路径引用范围较大 | 当前约有 137 个 PR pytest 文件，至少 67 个文件直接引用旧路径，还涉及 import、fixture、estimated times、skip 和 curated 清单 |
 
-如果后续决定合并，需要先建立显式的 PR 用例清单或统一 case catalog，用 `case_id` 保存测试路径、SoC、节点数、每节点 NPU 数、预估时间和允许的调度周期。PR 选择器只能在允许 PR 执行的 case 中推荐测试，不能简单把扫描根目录扩大到整个 `tests/e2e`。
+如果后续决定合并，需要先建立显式的 PR 用例清单或统一 case catalog，复用现有 `name` 作为稳定标识，并保存测试路径、SoC、节点数、每节点 NPU 数、预估时间和允许的调度周期。PR 选择器只能在允许 PR 执行的 case 中推荐测试，不能简单把扫描根目录扩大到整个 `tests/e2e`。
 
 会议需要重点讨论：
 
@@ -324,8 +324,7 @@ a3:
   multi_node:
     test_config:
       - name: speculative-decoding-external-lb
-        case_id: feature.speculative_decoding.accuracy.external_lb
-        test: tests/e2e/periodic/features/speculative_decoding/test_accuracy.py
+        tests: tests/e2e/periodic/features/speculative_decoding/test_accuracy.py
         size: 4
         dp_load_balancing: external
 ```
@@ -333,10 +332,10 @@ a3:
 各字段分别表达：
 
 - 外层 `single_node`、`double_node` 或 `multi_node`：选择资源调度方式；
+- `name`：现有调度、结果记录和 bisect 复用的稳定用例标识；
 - `size`：为 `multi_node` 指定具体节点数；`double_node` 固定为 2，通常不需要重复填写；
 - `dp_load_balancing`：当前选择 internal 或 external DP 负载均衡；
-- `test`：最终执行的 pytest 文件或 node id。
-- `case_id`：结果记录和 bisect 使用的稳定用例标识。
+- `tests`：最终执行的 pytest 文件或 node id，沿用现有矩阵字段名。
 
 `npu_per_node` 不建议作为每个用例条目的必填字段。它描述的是每个节点可分配的 NPU 容量，调度器在创建 Pod 或 LWS 时必须知道，但当前工作流已经根据 SoC/runner 类型得到该值（例如部分 A2 环境为 8，A3 环境为 16）。如果再由用例条目保存一份，调度值和测试值可能不一致。
 
@@ -353,12 +352,12 @@ a3:
   multi_node:
     test_config:
       - name: speculative-decoding-internal-lb
-        test: tests/e2e/periodic/features/speculative_decoding/test_accuracy.py
+        tests: tests/e2e/periodic/features/speculative_decoding/test_accuracy.py
         size: 4
         dp_load_balancing: internal
 
       - name: speculative-decoding-external-lb
-        test: tests/e2e/periodic/features/speculative_decoding/test_accuracy.py
+        tests: tests/e2e/periodic/features/speculative_decoding/test_accuracy.py
         size: 4
         dp_load_balancing: external
 ```
@@ -391,7 +390,7 @@ a3:
   double_node:
     test_config:
       - name: structured-output-external-lb
-        test: tests/e2e/periodic/features/structured_output/test_openai_api.py
+        tests: tests/e2e/periodic/features/structured_output/test_openai_api.py
         size: 2
         dp_load_balancing: external
 ```
@@ -419,6 +418,50 @@ pytest -sv \
 选择模式的唯一权威来源是 nightly/weekly 矩阵。pytest marker 可以用于标注测试能力，但不能决定申请几个节点或采用哪种 DP 模式，因为 pytest 启动时集群已经创建完成。
 
 迁移初期继续保留现有 `single_node`、`double_node`、`multi_node` 外层结构，只增加并透传 `dp_load_balancing`。
+
+### 4.5 `nightly_config.yaml` 迁移前后对比
+
+迁移前，单节点模型配置依赖 loader 的默认目录，多节点还通过 `config_base_path` 中的 `internal_dp` 或 `external_dp` 推断运行模式：
+
+```yaml
+a2:
+  single_node:
+    test_config:
+      - name: qwen3-30b-a3b-bf16-a2-performance
+        os: linux-aarch64-a2b3-4
+        config_file_path: Qwen3-30B-A3B-BF16-A2.yaml
+
+  multi_node:
+    test_config:
+      - name: multi-node-qwen3-235b-dp
+        config_file_path: Qwen3-235B-A22B-A2.yaml
+        config_base_path: tests/e2e/nightly/multi_node/internal_dp/config
+        size: 2
+```
+
+迁移后继续保留 SoC、资源分组、`name`、`os` 和 `size`，只把测试资产指向 `periodic`，并显式声明 DP 负载均衡模式：
+
+```yaml
+a2:
+  single_node:
+    test_config:
+      - name: qwen3-30b-a3b-bf16-a2-performance
+        os: linux-aarch64-a2b3-4
+        config_file_path: Qwen3-30B-A3B-BF16-A2.yaml
+        config_base_path: tests/e2e/periodic/models/configs/qwen
+
+  multi_node:
+    test_config:
+      - name: multi-node-qwen3-235b-dp
+        config_file_path: Qwen3-235B-A22B-A2.yaml
+        config_base_path: tests/e2e/periodic/models/configs/qwen
+        size: 2
+        dp_load_balancing: internal
+```
+
+直接执行的 feature 或 ops 用例继续使用现有 `tests` 字段，路径可以分别指向 `tests/e2e/periodic/features/...` 或 `tests/e2e/periodic/ops/...`。`single_node` 只表示资源调度方式，不对应固定的测试资产目录。
+
+迁移期间新旧条目可以存在于同一矩阵中：未迁移的单节点 YAML 条目缺省 `config_base_path` 时继续使用旧默认目录；已迁移条目显式提供新目录。全部迁移完成后再删除旧默认路径和路径推断逻辑。矩阵条目不增加 `test_frequency`、`resource_mode` 或新的 NPU 资源字段。
 
 ## 5. 当前主要阻碍
 
@@ -464,13 +507,9 @@ nightly 和 weekly 中存在 17 组同名 YAML，且部分同名文件内容不�
 
 good table 和 bisect 使用 `soc + scene + test_path` 识别用例。路径改变后，新记录可能无法匹配旧记录。
 
-短期可以在迁移时提供旧路径到新路径的映射。长期建议引入不依赖路径的稳定 `case_id`，例如：
+短期可以在迁移时提供旧路径到新路径的映射。长期复用现有 `name` 作为稳定标识，由 `test_frequency + soc + scene + name` 识别结果，不再使用测试路径作为身份字段。
 
-```text
-model.qwen3_235b.w8a8.performance
-feature.external_lb.kv_transfer
-op.triton.rms_norm
-```
+`name` 在对应调度范围内必须唯一，目录迁移时保持不变，也不包含 nightly/weekly 等周期信息。internal/external 等结果不同的场景使用不同名称。
 
 ### 5.6 fixture 作用域可能变化
 
@@ -512,7 +551,7 @@ A3 顶层 workflow 的主要逻辑保持不变：`setup-vars` 继续读取 `a3.m
 1. 让结果处理显式读取 workflow 已有的 `test_frequency`；
 2. 让多机启动显式读取 `dp_load_balancing` 并选择对应 runtime；
 3. 为调度条目补充稳定的资源信息；
-4. 为 good table 设计路径迁移方案或稳定 `case_id`。
+4. 为 good table 设计路径迁移方案，并将现有 `name` 作为稳定标识。
 
 该阶段先不移动测试文件，以便单独验证行为变化。
 
@@ -609,7 +648,7 @@ nightly/weekly 和 single-node/double-node/multi-node 应继续存在于调度�
 | `ops` 和 `features` 迁移 | 移动测试、维持 `conftest.py` 作用域、更新矩阵 | 2～4 人日 |
 | 模型配置迁移 | 迁移 191 个 YAML，检查并处理 17 组同名冲突 | 3～5 人日 |
 | CI 矩阵与工作流调整 | 更新 nightly/weekly、单节点/2 节点/多节点的所有引用 | 2～3 人日 |
-| good table 与 bisect | 路径兼容、场景标识、历史记录迁移或稳定 `case_id` | 2～3 人日 |
+| good table 与 bisect | 路径兼容、稳定 `name`、场景标识和历史记录迁移 | 2～3 人日 |
 | 文档与静态检查 | 更新贡献文档、命令示例，执行格式和引用完整性检查 | 1～2 人日 |
 | NPU CI 验证与修复 | 覆盖各周期、拓扑、硬件和部署模式的代表用例 | 3～5 人日 |
 

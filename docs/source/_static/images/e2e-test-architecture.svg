@@ -40,7 +40,7 @@
 
   <rect class="card" x="825" y="108" width="520" height="108" rx="13" fill="#dbeafe" stroke="#3b82f6"/>
   <text x="1085" y="139" text-anchor="middle" class="box-title">用例条目</text>
-  <text x="1085" y="166" text-anchor="middle" class="box-text">test · case_id · size · dp_load_balancing</text>
+  <text x="1085" y="166" text-anchor="middle" class="box-text">name · tests · size · dp_load_balancing</text>
   <text x="1085" y="190" text-anchor="middle" class="box-text">硬件、镜像及模型参数</text>
 
   <path class="edge" d="M475 162 H815"/>
